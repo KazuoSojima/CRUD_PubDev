@@ -8,6 +8,8 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  var automovel = ['palio', 'corsa', 'gol', 'uno'];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,6 +23,13 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
+      body: ListView.builder(
+          itemCount: automovel.length,
+          itemBuilder: (context, int index) {
+            return ListTile(
+              title: Text(automovel[index]),
+            );
+          }),
     );
   }
 }
