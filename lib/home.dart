@@ -9,13 +9,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   var automovel = ['palio', 'corsa', 'gol', 'uno'];
-
-  /*Map<String, dynamic> carros = {
-    'id': '01',
-    'modelo': 'palio',
-    'placa': 'ASD1234',
-    'chassi': '123456789',
-  };*/
+  TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,38 +20,106 @@ class _HomeState extends State<Home> {
         actions: [
           IconButton(
             onPressed: () {
-              cadastrarCarro(context).then((value) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Item $value salvo com sucesso'),
-                    duration: const Duration(milliseconds: 2000),
-                  ),
-                );
-              });
+              cadastrarCarro(context);
             },
             icon: const Icon(Icons.add),
           ),
         ],
       ),
+      body: ListView.builder(
+          itemCount: automovel.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              title: Text(automovel[index]),
+              trailing: Wrap(
+                spacing: 15, // space between two icons
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    color: Colors.black45,
+                    onPressed: () {},
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    color: Colors.red[300],
+                    onPressed: () {
+                      removerItem();
+                    },
+                  ),
+                ],
+              ),
+              onLongPress: editarItem(),
+            );
+          }),
     );
   }
 
   Future cadastrarCarro(BuildContext context) {
-    TextEditingController controller = TextEditingController();
-
     return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: const Text('cadastrar novo carro'),
-            content: TextField(controller: controller),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'ex. Fusca',
+              ),
+            ),
             actions: [
               MaterialButton(
                 elevation: 5.0,
                 child: const Text('salvar'),
                 onPressed: () {
-                  Navigator.of(context).pop(controller.text.toString());
+                  var input = controller.text;
+                  if (input == '') {
+                    Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pop(controller.text.toString());
+                    addToList();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Item $input salvo com sucesso'),
+                        duration: const Duration(milliseconds: 2000),
+                      ),
+                    );
+                  }
                 },
+              )
+            ],
+          );
+        });
+  }
+
+  addToList() {
+    setState(() {
+      automovel.add(controller.text);
+      controller.text = "";
+    });
+  }
+
+  editarItem() {}
+
+  removerItem() {
+    showDialog(
+        context: context,
+        builder: (builder) {
+          return AlertDialog(
+            title: Text('deseja mesmo remover $controller.text da lista?'),
+            actions: [
+              Row(
+                children: [
+                  MaterialButton(
+                    elevation: 5.0,
+                    child: const Text('sim'),
+                    onPressed: () {},
+                  ),
+                  MaterialButton(
+                    elevation: 5.0,
+                    child: const Text('não'),
+                    onPressed: () {},
+                  ),
+                ],
               )
             ],
           );
