@@ -10,6 +10,13 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   var automovel = ['palio', 'corsa', 'gol', 'uno'];
 
+  /*Map<String, dynamic> carros = {
+    'id': '01',
+    'modelo': 'palio',
+    'placa': 'ASD1234',
+    'chassi': '123456789',
+  };*/
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,18 +25,42 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.grey,
         actions: [
           IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.add),
+            onPressed: () {
+              cadastrarCarro(context).then((value) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Item $value salvo com sucesso'),
+                    duration: const Duration(milliseconds: 2000),
+                  ),
+                );
+              });
+            },
+            icon: const Icon(Icons.add),
           ),
         ],
       ),
-      body: ListView.builder(
-          itemCount: automovel.length,
-          itemBuilder: (context, int index) {
-            return ListTile(
-              title: Text(automovel[index]),
-            );
-          }),
     );
+  }
+
+  Future cadastrarCarro(BuildContext context) {
+    TextEditingController controller = TextEditingController();
+
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('cadastrar novo carro'),
+            content: TextField(controller: controller),
+            actions: [
+              MaterialButton(
+                elevation: 5.0,
+                child: const Text('salvar'),
+                onPressed: () {
+                  Navigator.of(context).pop(controller.text.toString());
+                },
+              )
+            ],
+          );
+        });
   }
 }
