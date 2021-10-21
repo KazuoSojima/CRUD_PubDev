@@ -37,18 +37,19 @@ class _HomeState extends State<Home> {
                   IconButton(
                     icon: Icon(Icons.edit),
                     color: Colors.black45,
-                    onPressed: () {},
+                    onPressed: () {
+                      editarItem(index);
+                    },
                   ),
                   IconButton(
                     icon: Icon(Icons.delete),
                     color: Colors.red[300],
                     onPressed: () {
-                      removerItem();
+                      removerItem(index);
                     },
                   ),
                 ],
               ),
-              onLongPress: editarItem(),
             );
           }),
     );
@@ -98,26 +99,85 @@ class _HomeState extends State<Home> {
     });
   }
 
-  editarItem() {}
-
-  removerItem() {
+  editarItem(int index) {
+    var carro = automovel[index];
     showDialog(
         context: context,
         builder: (builder) {
           return AlertDialog(
-            title: Text('deseja mesmo remover $controller.text da lista?'),
+            title: Text('deseja alterar $carro ?'),
+            content: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: 'ex. Fusca',
+              ),
+            ),
+            actions: [
+              Row(
+                children: [
+                  MaterialButton(
+                    elevation: 5.0,
+                    child: const Text('salvar'),
+                    onPressed: () {
+                      var input = controller.text;
+                      if (input == '') {
+                        Navigator.of(context).pop();
+                      } else {
+                        setState(() {
+                          automovel[index] = controller.text;
+                        });
+                        controller.text = "";
+                        Navigator.of(context).pop();
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Item $input salvo com sucesso'),
+                            duration: const Duration(milliseconds: 2000),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                  MaterialButton(
+                    elevation: 5.0,
+                    child: const Text('não'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      controller.text = "";
+                    },
+                  ),
+                ],
+              )
+            ],
+          );
+        });
+  }
+
+  removerItem(int index) {
+    showDialog(
+        context: context,
+        builder: (builder) {
+          return AlertDialog(
+            title: Text('deseja mesmo remover ${automovel[index]} da lista?'),
             actions: [
               Row(
                 children: [
                   MaterialButton(
                     elevation: 5.0,
                     child: const Text('sim'),
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        automovel.removeAt(index);
+                        Navigator.of(context).pop();
+                      });
+                    },
                   ),
                   MaterialButton(
                     elevation: 5.0,
                     child: const Text('não'),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
                 ],
               )
