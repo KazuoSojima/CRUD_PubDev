@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:crud_pupdev/model/carros.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -8,8 +12,31 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  var automovel = ['palio', 'corsa', 'gol', 'uno'];
+  List<Carros> automovel = [];
+
   TextEditingController controller = TextEditingController();
+
+  Future load() async {
+    var prefs = await SharedPreferences.getInstance();
+    var data = prefs.getString('data');
+
+    if (data != null) {
+      Iterable decoded = jsonDecode(data);
+      List<Carros> result = decoded.map((x) => Carros.fromJson(x)).toList();
+      setState(() {
+        automovel = result;
+      });
+    }
+  }
+
+  save() async {
+    var prefs = await SharedPreferences.getInstance();
+    await prefs.setString('data', jsonEncode(automovel));
+  }
+
+  _HomeState() {
+    load();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +57,9 @@ class _HomeState extends State<Home> {
           itemCount: automovel.length,
           itemBuilder: (context, index) {
             return ListTile(
-              title: Text(automovel[index]),
+              title: Text(automovel[index].carro),
               trailing: Wrap(
-                spacing: 15, // space between two icons
+                spacing: 15,
                 children: [
                   IconButton(
                     icon: Icon(Icons.edit),
@@ -78,6 +105,8 @@ class _HomeState extends State<Home> {
                   } else {
                     Navigator.of(context).pop(controller.text.toString());
                     addToList();
+                    save();
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Item $input salvo com sucesso'),
@@ -94,13 +123,13 @@ class _HomeState extends State<Home> {
 
   addToList() {
     setState(() {
-      automovel.add(controller.text);
-      controller.text = "";
+      automovel.add(Carros(carro: controller.text));
+      controller.clear();
     });
   }
 
   editarItem(int index) {
-    var carro = automovel[index];
+    var carro = automovel[index].carro;
     showDialog(
         context: context,
         builder: (builder) {
@@ -124,9 +153,10 @@ class _HomeState extends State<Home> {
                         Navigator.of(context).pop();
                       } else {
                         setState(() {
-                          automovel[index] = controller.text;
+                          automovel[index].carro = controller.text;
                         });
-                        controller.text = "";
+                        //save();
+                        controller.clear();
                         Navigator.of(context).pop();
 
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -143,7 +173,7 @@ class _HomeState extends State<Home> {
                     child: const Text('não'),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      controller.text = "";
+                      controller.clear();
                     },
                   ),
                 ],
@@ -158,7 +188,8 @@ class _HomeState extends State<Home> {
         context: context,
         builder: (builder) {
           return AlertDialog(
-            title: Text('deseja mesmo remover ${automovel[index]} da lista?'),
+            title: Text(
+                'deseja mesmo remover ${automovel[index].carro} da lista?'),
             actions: [
               Row(
                 children: [
@@ -169,6 +200,7 @@ class _HomeState extends State<Home> {
                       setState(() {
                         automovel.removeAt(index);
                         Navigator.of(context).pop();
+                        save();
                       });
                     },
                   ),
